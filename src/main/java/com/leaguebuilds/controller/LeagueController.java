@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/lol")
+@RequestMapping("/api/lol")
 public class LeagueController {
 
     private LeagueService leagueService;
@@ -19,7 +19,7 @@ public class LeagueController {
         this.leagueService = leagueService;
     }
 
-    @GetMapping({"/{id}"})
+    @GetMapping({"/item/{id}"})
     public Item getItemById(@PathVariable String id) {
         return leagueService.getItemById(id);
     }

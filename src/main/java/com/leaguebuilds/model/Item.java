@@ -8,8 +8,5 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Item {
     private String id;
-    @JsonPropertyOrder({"name", "plaintext"})
     private String name;
-    //private String plaintext;
-    //private String description;
 }
