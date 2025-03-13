@@ -51,23 +51,8 @@ public class LeagueService {
         }
     }
 
-    /**
-     * Obtiene un objeto Item específico por su ID desde la API de Riot Games.
-     *
-     * @param id El identificador del ítem que se desea obtener.
-     * @return El objeto Item correspondiente al ID proporcionado.
-     * @throws RuntimeException Si ocurre un error al analizar los datos del ítem.
-     */
     public Item getItemById(String id) {
-        String response = restTemplate.getForObject(RIOT_API_URL, String.class);
-        try {
-            JsonNode root = objectMapper.readTree(response);
-            JsonNode itemNode = root.path("data").path(id);
-            ((ObjectNode) itemNode).put("id", id);
-            return objectMapper.treeToValue(itemNode, Item.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing item data: " + e.getMessage());
-        }
+        return items.get(Integer.valueOf(id));
     }
 
     public HashMap<Integer, Item> getItems() {
