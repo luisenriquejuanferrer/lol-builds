@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.leaguebuilds.model.Item;
+import com.leaguebuilds.utils.Utils;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,15 +13,12 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 
 @Service
-public class LeagueService {
-
-    private static final String RIOT_API_VERSION = "15.5.1";
-    private static final String RIOT_API_URL = "https://ddragon.leagueoflegends.com/cdn/" + RIOT_API_VERSION + "/data/en_US/item.json";
+public class ItemService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final HashMap<Integer, Item> items = new HashMap<>();
 
-    public LeagueService(RestTemplate restTemplate) {
+    public ItemService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
     }
@@ -31,7 +29,7 @@ public class LeagueService {
      */
     @PostConstruct
     public void loadItems() {
-        String response = restTemplate.getForObject(RIOT_API_URL, String.class);
+        String response = restTemplate.getForObject(Utils.RIOT_API_ITEM_URL, String.class);
         try {
             JsonNode root = objectMapper.readTree(response);
             JsonNode dataNode = root.path("data");
@@ -42,6 +40,7 @@ public class LeagueService {
                 try {
                     Item item = objectMapper.treeToValue(itemNode, Item.class);
                     items.put(Integer.valueOf(item.getId()), item);
+                    //item.setImage(Utils.RIOT_API_IMAGE_URL + item.getId() + ".png");
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
