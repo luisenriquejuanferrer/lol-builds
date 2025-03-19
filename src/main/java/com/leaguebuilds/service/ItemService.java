@@ -36,13 +36,17 @@ public class ItemService {
             dataNode.fields().forEachRemaining(entry -> {
                 String id = entry.getKey();
                 JsonNode itemNode = entry.getValue();
-                ((ObjectNode) itemNode).put("id", id);
-                try {
-                    Item item = objectMapper.treeToValue(itemNode, Item.class);
-                    items.put(Integer.valueOf(item.getId()), item);
-                    //item.setImage(Utils.RIOT_API_IMAGE_URL + item.getId() + ".png");
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                if (itemNode.path("maps").path("11").asBoolean() && itemNode.path("gold").path("purchasable").asBoolean()) {
+                    ((ObjectNode) itemNode).put("id", id);
+                    int totalGold = itemNode.path("gold").path("total").asInt();
+                    ((ObjectNode) itemNode).put("totalGold", totalGold);
+                    try {
+                        Item item = objectMapper.treeToValue(itemNode, Item.class);
+                        items.put(Integer.valueOf(item.getId()), item);
+                        //item.setImage(Utils.RIOT_API_IMAGE_URL + item.getId() + ".png");
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } catch (Exception e) {

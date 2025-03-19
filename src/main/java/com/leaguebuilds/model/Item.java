@@ -8,6 +8,7 @@ import lombok.Data;
 public class Item {
     private String id;
     private String name;
+    private int totalGold;
 
     //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {
