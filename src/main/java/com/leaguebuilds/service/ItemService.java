@@ -58,6 +58,7 @@ public class ItemService {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing item data: " + e.getMessage());
         }
+        deleteDuplicatedItems();
     }
 
     /**
@@ -67,7 +68,6 @@ public class ItemService {
      * Utiliza un `Set` para rastrear los nombres de los ítems que ya se han visto y filtra los duplicados.
      * Luego, limpia el HashMap original y lo vuelve a llenar con los ítems únicos.
      */
-    @PostConstruct
     public void deleteDuplicatedItems() {
         Set<String> seenNames = new HashSet<>();
 
