@@ -15,6 +15,6 @@ public class Item {
 
     //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {
-        return "https://ddragon.leagueoflegends.com/cdn/15.5.1/img/item/" + id + ".png";
+        return "https://ddragon.leagueoflegends.com/cdn/15.6.1/img/item/" + id + ".png";
     }
 }
