@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Item;
 import com.leaguebuilds.utils.Utils;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class ItemService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    @Getter
     private final HashMap<Integer, Item> items = new HashMap<>();
 
     public ItemService(RestTemplate restTemplate) {
@@ -84,7 +88,15 @@ public class ItemService {
         return items.get(Integer.valueOf(id));
     }
 
-    public HashMap<Integer, Item> getItems() {
-        return items;
+    public void uploadItemsToFirestore() {
+        Firestore db = FirestoreClient.getFirestore();
+
+        items.values().forEach(item -> {
+            db.collection("lolbuilder")
+                    .document("15.6.1")
+                    .collection("items")
+                    .document(item.getId())
+                    .set(item);
+        });
     }
 }

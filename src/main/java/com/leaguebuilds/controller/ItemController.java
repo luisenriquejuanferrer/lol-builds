@@ -29,4 +29,9 @@ public class ItemController {
     public HashMap<Integer, Item> getItems() {
         return itemService.getItems();
     }
+
+    @GetMapping("/items/upload")
+    public void uploadItemsToFirestore() {
+        itemService.uploadItemsToFirestore();
+    }
 }

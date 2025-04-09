@@ -1,0 +1,6 @@
+# Nombre de la aplicación Spring Boot
+spring.application.name=lol-builds
+
+# Ruta al archivo JSON de configuración de Firebase
+# IMPORTANTE: No subas el archivo JSON real a GitHub, solo proporciona la ruta
+FIREBASE.CONFIG.FILE.PATH=src/main/resources/tu-archivo-firebase-config.json

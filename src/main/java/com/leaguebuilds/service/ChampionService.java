@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.leaguebuilds.controller.ChampionController;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Champion;
-import com.leaguebuilds.model.Item;
-import com.leaguebuilds.utils.Utils;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class ChampionService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    @Getter
     private final HashMap<String, Champion> champions = new HashMap<>();
 
     public ChampionService(RestTemplate restTemplate) {
@@ -52,7 +53,15 @@ public class ChampionService {
         }
     }
 
-    public HashMap<String, Champion> getChampions() {
-        return champions;
+    public void uploadChampionsToFirestore() {
+        Firestore db = FirestoreClient.getFirestore();
+
+        champions.values().forEach(champion -> {
+            db.collection("lolbuilder")
+                    .document("15.6.1")
+                    .collection("champions")
+                    .document(champion.getId())
+                    .set(champion);
+        });
     }
 }
