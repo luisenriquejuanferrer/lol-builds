@@ -44,3 +44,9 @@ build/
 # Archivos de sistema (Windows y macOS)
 Thumbs.db
 .DS_Store
+
+# Application properties
+src/main/resources/application.properties
+
+# Firebase
+src/main/resources/test-20aee-firebase-adminsdk-fbsvc-b92ada1d9b.json
