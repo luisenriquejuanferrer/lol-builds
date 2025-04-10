@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Item;
 import com.leaguebuilds.utils.Utils;
@@ -13,10 +16,8 @@ import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +36,6 @@ public class ItemService {
      * Carga los ítems desde la API de Riot Games y los almacena en una lista.
      * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
      */
-    @PostConstruct
     public void loadItems() {
         String response = restTemplate.getForObject(Utils.RIOT_API_ITEM_URL, String.class);
         try {
@@ -84,10 +84,6 @@ public class ItemService {
         items.putAll(filteredItems);
     }
 
-    public Item getItemById(String id) {
-        return items.get(Integer.valueOf(id));
-    }
-
     public void uploadItemsToFirestore() {
         Firestore db = FirestoreClient.getFirestore();
 
@@ -98,5 +94,23 @@ public class ItemService {
                     .document(item.getId())
                     .set(item);
         });
+    }
+
+    @PostConstruct
+    public List<Item> loadItemsFromFirestore() throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+
+        ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
+                .document("15.6.1")
+                .collection("items")
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        List<Item> items = new ArrayList<>();
+
+        for (QueryDocumentSnapshot doc : documents) {
+            items.add(doc.toObject(Item.class));
+        }
+        return items;
     }
 }

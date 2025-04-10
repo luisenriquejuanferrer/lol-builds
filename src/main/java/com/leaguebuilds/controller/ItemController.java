@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping(Utils.BASE_API_URL)
@@ -20,11 +22,6 @@ public class ItemController {
         this.itemService = itemService;
     }
 
-    @GetMapping({"/item/{id}"})
-    public Item getItemById(@PathVariable String id) {
-        return itemService.getItemById(id);
-    }
-
     @GetMapping("/items")
     public HashMap<Integer, Item> getItems() {
         return itemService.getItems();
@@ -33,5 +30,10 @@ public class ItemController {
     @GetMapping("/items/upload")
     public void uploadItemsToFirestore() {
         itemService.uploadItemsToFirestore();
+    }
+
+    @GetMapping("/items/firestore")
+    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
+        return itemService.loadItemsFromFirestore();
     }
 }
