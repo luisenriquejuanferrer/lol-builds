@@ -3,6 +3,7 @@ package com.leaguebuilds.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -11,7 +12,7 @@ public class Item {
     private String id;
     private String name;
     private int totalGold;
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {

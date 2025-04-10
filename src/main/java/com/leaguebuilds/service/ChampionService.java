@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Champion;
 import jakarta.annotation.PostConstruct;
@@ -12,7 +15,10 @@ import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class ChampionService {
@@ -26,7 +32,7 @@ public class ChampionService {
         this.objectMapper = new ObjectMapper();
     }
 
-    @PostConstruct
+
     public void loadChampions() {
         String url = "https://ddragon.leagueoflegends.com/cdn/15.6.1/data/en_US/champion.json";
         String response = restTemplate.getForObject(url, String.class);
@@ -63,5 +69,23 @@ public class ChampionService {
                     .document(champion.getId())
                     .set(champion);
         });
+    }
+
+    @PostConstruct
+    public List<Champion> loadChampionsFromFirestore() throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+
+        ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
+                .document("15.6.1")
+                .collection("champions")
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        List<Champion> champions = new ArrayList<>();
+
+        for (QueryDocumentSnapshot doc : documents) {
+            champions.add(doc.toObject(Champion.class));
+        }
+        return champions;
     }
 }

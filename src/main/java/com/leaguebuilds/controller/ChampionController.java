@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping(Utils.BASE_API_URL)
@@ -24,8 +26,13 @@ public class ChampionController {
         return championService.getChampions();
     }
 
+    @GetMapping("/champions/firestore")
+    public List<Champion> getChampionsFromFirestore() throws ExecutionException, InterruptedException {
+        return championService.loadChampionsFromFirestore();
+    }
+
     @GetMapping("/champions/post")
-    public void uploadChampionsToFirestore(){
+    public void uploadChampionsToFirestore() {
         championService.uploadChampionsToFirestore();
     }
 }
