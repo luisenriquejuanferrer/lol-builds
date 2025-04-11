@@ -42,6 +42,7 @@ public class ApiVersionService {
         setLatestApiVersion();
         if (!Objects.equals(latestApiVersion, Utils.getRIOT_API_VERSION())) {
             Utils.setRIOT_API_VERSION(latestApiVersion);
+            System.out.println(Utils.getRIOT_API_VERSION());
         }
     }
 }
