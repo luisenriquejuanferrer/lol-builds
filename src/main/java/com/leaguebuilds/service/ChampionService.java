@@ -10,8 +10,9 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Champion;
-import jakarta.annotation.PostConstruct;
+import com.leaguebuilds.utils.Utils;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,15 +27,16 @@ public class ChampionService {
     private final ObjectMapper objectMapper;
     @Getter
     private final HashMap<String, Champion> champions = new HashMap<>();
+    private final String RIOT_API_VERSION = "15.7.1";
 
     public ChampionService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
     }
 
-
+    // @PostConstruct
     public void loadChampions() {
-        String url = "https://ddragon.leagueoflegends.com/cdn/15.6.1/data/en_US/champion.json";
+        String url = Utils.RIOT_API_CHAMPION_URL;
         String response = restTemplate.getForObject(url, String.class);
 
         try {
@@ -54,6 +56,7 @@ public class ChampionService {
                 }
 
             });
+            uploadChampionsToFirestore();
         } catch (Exception e) {
             throw new RuntimeException("Error parsing item data: " + e.getMessage());
         }
@@ -64,19 +67,18 @@ public class ChampionService {
 
         champions.values().forEach(champion -> {
             db.collection("lolbuilder")
-                    .document("15.6.1")
+                    .document(RIOT_API_VERSION)
                     .collection("champions")
                     .document(champion.getId())
                     .set(champion);
         });
     }
 
-    @PostConstruct
-    public List<Champion> loadChampionsFromFirestore() throws ExecutionException, InterruptedException {
+    public List<Champion> getChampionsFromFirestore() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document("15.6.1")
+                .document(RIOT_API_VERSION)
                 .collection("champions")
                 .get();
 

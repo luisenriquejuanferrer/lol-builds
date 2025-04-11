@@ -3,12 +3,9 @@ package com.leaguebuilds.controller;
 import com.leaguebuilds.model.Item;
 import com.leaguebuilds.service.ItemService;
 import com.leaguebuilds.utils.Utils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jdk.jshell.execution.Util;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -22,18 +19,18 @@ public class ItemController {
         this.itemService = itemService;
     }
 
+//    @GetMapping("/items")
+//    public HashMap<Integer, Item> getItems() {
+//        return itemService.getItems();
+//    }
+
     @GetMapping("/items")
-    public HashMap<Integer, Item> getItems() {
-        return itemService.getItems();
+    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
+        return itemService.getItemsFromFirestore();
     }
 
-    @GetMapping("/items/upload")
+    @PostMapping("/items/uploadItems")
     public void uploadItemsToFirestore() {
         itemService.uploadItemsToFirestore();
-    }
-
-    @GetMapping("/items/firestore")
-    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
-        return itemService.loadItemsFromFirestore();
     }
 }

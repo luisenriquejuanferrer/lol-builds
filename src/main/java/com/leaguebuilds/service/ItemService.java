@@ -11,8 +11,8 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Item;
 import com.leaguebuilds.utils.Utils;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,6 +26,8 @@ public class ItemService {
     private final ObjectMapper objectMapper;
     @Getter
     private final HashMap<Integer, Item> items = new HashMap<>();
+    private final String RIOT_API_VERSION = "15.7.1";
+
 
     public ItemService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -36,6 +38,7 @@ public class ItemService {
      * Carga los ítems desde la API de Riot Games y los almacena en una lista.
      * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
      */
+    // @PostConstruct
     public void loadItems() {
         String response = restTemplate.getForObject(Utils.RIOT_API_ITEM_URL, String.class);
         try {
@@ -82,6 +85,7 @@ public class ItemService {
 
         items.clear();
         items.putAll(filteredItems);
+        uploadItemsToFirestore();
     }
 
     public void uploadItemsToFirestore() {
@@ -89,19 +93,18 @@ public class ItemService {
 
         items.values().forEach(item -> {
             db.collection("lolbuilder")
-                    .document("15.6.1")
+                    .document(RIOT_API_VERSION)
                     .collection("items")
                     .document(item.getId())
                     .set(item);
         });
     }
 
-    @PostConstruct
-    public List<Item> loadItemsFromFirestore() throws ExecutionException, InterruptedException {
+    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document("15.6.1")
+                .document(RIOT_API_VERSION)
                 .collection("items")
                 .get();
 

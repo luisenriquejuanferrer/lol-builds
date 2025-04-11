@@ -1,6 +1,7 @@
 package com.leaguebuilds.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.leaguebuilds.utils.Utils;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -16,6 +17,6 @@ public class Item {
 
     //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {
-        return "https://ddragon.leagueoflegends.com/cdn/15.6.1/img/item/" + id + ".png";
+        return Utils.RIOT_API_ITEM_IMAGE_URL + id + ".png";
     }
 }
