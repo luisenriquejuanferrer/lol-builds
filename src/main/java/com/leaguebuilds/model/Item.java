@@ -17,6 +17,6 @@ public class Item {
 
     //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {
-        return Utils.RIOT_API_ITEM_IMAGE_URL + id + ".png";
+        return Utils.getRIOT_API_ITEM_IMAGE_URL() + id + ".png";
     }
 }

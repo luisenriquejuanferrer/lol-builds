@@ -25,7 +25,6 @@ public class ChampionService {
     private final ObjectMapper objectMapper;
     @Getter
     private final HashMap<String, Champion> champions = new HashMap<>();
-    private final String RIOT_API_VERSION = Utils.getRIOT_API_VERSION();
 
     public ChampionService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -34,7 +33,7 @@ public class ChampionService {
 
     // @PostConstruct
     public void loadChampions() {
-        String response = restTemplate.getForObject(Utils.RIOT_API_CHAMPION_URL, String.class);
+        String response = restTemplate.getForObject(Utils.getRIOT_API_CHAMPION_URL(), String.class);
 
         try {
             JsonNode root = objectMapper.readTree(response);
@@ -64,7 +63,7 @@ public class ChampionService {
 
         champions.values().forEach(champion -> {
             db.collection("lolbuilder")
-                    .document(RIOT_API_VERSION)
+                    .document(Utils.getRIOT_API_VERSION())
                     .collection("champions")
                     .document(champion.getId())
                     .set(champion);
@@ -86,12 +85,12 @@ public class ChampionService {
 
         versions.sort(Comparator.reverseOrder());
 
-        if (!Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION()) || versions.isEmpty()) {
             loadChampions();
         }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document(RIOT_API_VERSION)
+                .document(Utils.getRIOT_API_VERSION())
                 .collection("champions")
                 .get();
 

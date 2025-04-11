@@ -28,9 +28,6 @@ public class ItemService {
     @Getter
     private final HashMap<Integer, Item> items = new HashMap<>();
 
-    private final String RIOT_API_VERSION = Utils.getRIOT_API_VERSION();
-
-
     public ItemService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
@@ -41,7 +38,7 @@ public class ItemService {
      * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
      */
     public void loadItems() {
-        String response = restTemplate.getForObject(Utils.RIOT_API_ITEM_URL, String.class);
+        String response = restTemplate.getForObject(Utils.getRIOT_API_ITEM_URL(), String.class);
         try {
             JsonNode root = objectMapper.readTree(response);
             JsonNode dataNode = root.path("data");
@@ -93,7 +90,7 @@ public class ItemService {
 
         items.values().forEach(item -> {
             db.collection("lolbuilder")
-                    .document(RIOT_API_VERSION)
+                    .document(Utils.getRIOT_API_VERSION())
                     .collection("items")
                     .document(item.getId())
                     .set(item);
@@ -115,12 +112,12 @@ public class ItemService {
 
         versions.sort(Comparator.reverseOrder());
 
-        if (!Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
             loadItems();
         }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document(RIOT_API_VERSION)
+                .document(Utils.getRIOT_API_VERSION())
                 .collection("items")
                 .get();
 
