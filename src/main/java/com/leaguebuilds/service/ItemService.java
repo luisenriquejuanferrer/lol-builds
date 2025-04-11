@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Item;
 import com.leaguebuilds.utils.Utils;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,7 +27,8 @@ public class ItemService {
     private final ObjectMapper objectMapper;
     @Getter
     private final HashMap<Integer, Item> items = new HashMap<>();
-    private final String RIOT_API_VERSION = "15.7.1";
+
+    private final String RIOT_API_VERSION = Utils.getRIOT_API_VERSION();
 
 
     public ItemService(RestTemplate restTemplate) {
@@ -38,7 +40,6 @@ public class ItemService {
      * Carga los ítems desde la API de Riot Games y los almacena en una lista.
      * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
      */
-    // @PostConstruct
     public void loadItems() {
         String response = restTemplate.getForObject(Utils.RIOT_API_ITEM_URL, String.class);
         try {
@@ -60,7 +61,6 @@ public class ItemService {
                         throw new RuntimeException(e);
                     }
                 }
-
             });
         } catch (Exception e) {
             throw new RuntimeException("Error parsing item data: " + e.getMessage());
@@ -71,7 +71,7 @@ public class ItemService {
     /**
      * Elimina los ítems duplicados en el HashMap `items` basándose en el nombre del ítem.
      * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
-     *
+     * <p>
      * Utiliza un `Set` para rastrear los nombres de los ítems que ya se han visto y filtra los duplicados.
      * Luego, limpia el HashMap original y lo vuelve a llenar con los ítems únicos.
      */
@@ -102,6 +102,22 @@ public class ItemService {
 
     public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
+
+        Iterable<DocumentReference> refs = db.collection("lolbuilder").listDocuments();
+        List<String> versions = new ArrayList<>();
+
+        for (DocumentReference ref : refs) {
+            String id = ref.getId();
+            if (id.matches("\\d+\\.\\d+\\.\\d+")) {
+                versions.add(id);
+            }
+        }
+
+        versions.sort(Comparator.reverseOrder());
+
+        if (!Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+            loadItems();
+        }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
                 .document(RIOT_API_VERSION)

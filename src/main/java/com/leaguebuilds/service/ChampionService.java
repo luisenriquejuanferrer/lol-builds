@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -12,13 +13,10 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.leaguebuilds.model.Champion;
 import com.leaguebuilds.utils.Utils;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -27,7 +25,7 @@ public class ChampionService {
     private final ObjectMapper objectMapper;
     @Getter
     private final HashMap<String, Champion> champions = new HashMap<>();
-    private final String RIOT_API_VERSION = "15.7.1";
+    private final String RIOT_API_VERSION = Utils.getRIOT_API_VERSION();
 
     public ChampionService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -36,8 +34,7 @@ public class ChampionService {
 
     // @PostConstruct
     public void loadChampions() {
-        String url = Utils.RIOT_API_CHAMPION_URL;
-        String response = restTemplate.getForObject(url, String.class);
+        String response = restTemplate.getForObject(Utils.RIOT_API_CHAMPION_URL, String.class);
 
         try {
             JsonNode root = objectMapper.readTree(response);
@@ -56,10 +53,10 @@ public class ChampionService {
                 }
 
             });
-            uploadChampionsToFirestore();
         } catch (Exception e) {
             throw new RuntimeException("Error parsing item data: " + e.getMessage());
         }
+        uploadChampionsToFirestore();
     }
 
     public void uploadChampionsToFirestore() {
@@ -76,6 +73,22 @@ public class ChampionService {
 
     public List<Champion> getChampionsFromFirestore() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
+
+        Iterable<DocumentReference> refs = db.collection("lolbuilder").listDocuments();
+        List<String> versions = new ArrayList<>();
+
+        for (DocumentReference ref : refs) {
+            String id = ref.getId();
+            if (id.matches("\\d+\\.\\d+\\.\\d+")) {
+                versions.add(id);
+            }
+        }
+
+        versions.sort(Comparator.reverseOrder());
+
+        if (!Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+            loadChampions();
+        }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
                 .document(RIOT_API_VERSION)
