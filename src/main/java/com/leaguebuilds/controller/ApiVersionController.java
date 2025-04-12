@@ -18,6 +18,6 @@ public class ApiVersionController {
 
     @GetMapping("/versions")
     public String[] getApiVersions(){
-        return apiVersionService.getApiVersions();
+        return apiVersionService.loadApiVersions();
     }
 }

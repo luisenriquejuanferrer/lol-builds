@@ -10,7 +10,7 @@ public class Champion {
     private String id;
 
     public String getImage() {
-        return Utils.getRIOT_API_CHAMPION_IMAGE_URL() + id + ".png";
+        return Utils.getRiotApiChampionImageURL() + id + ".png";
     }
 
 }

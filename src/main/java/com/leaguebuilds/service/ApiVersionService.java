@@ -14,7 +14,6 @@ public class ApiVersionService {
     private final RestTemplate restTemplate;
     private ObjectMapper objectMapper;
 
-    private String latestApiVersion;
     private String[] apiVersions = new String[]{};
 
     public ApiVersionService(RestTemplate restTemplate, ItemService itemService) {
@@ -22,7 +21,7 @@ public class ApiVersionService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public String[] getApiVersions() {
+    public String[] loadApiVersions() {
         try {
             String response = restTemplate.getForObject(Utils.RIOT_API_VERSION_URL, String.class);
             apiVersions = objectMapper.readValue(response, String[].class);
@@ -33,16 +32,16 @@ public class ApiVersionService {
     }
 
     public void setLatestApiVersion() {
-        getApiVersions();
-        latestApiVersion = apiVersions[0];
+        String latestApiVersion = apiVersions[0];
+
+        if (!Objects.equals(latestApiVersion, Utils.getRiotApiVersion())) {
+            Utils.setRiotApiVersion(latestApiVersion);
+        }
     }
 
     @PostConstruct
     public void init() {
+        loadApiVersions();
         setLatestApiVersion();
-        if (!Objects.equals(latestApiVersion, Utils.getRIOT_API_VERSION())) {
-            Utils.setRIOT_API_VERSION(latestApiVersion);
-            System.out.println(Utils.getRIOT_API_VERSION());
-        }
     }
 }

@@ -32,12 +32,8 @@ public class ItemService {
         this.objectMapper = new ObjectMapper();
     }
 
-    /**
-     * Carga los ítems desde la API de Riot Games y los almacena en una lista.
-     * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
-     */
     public void loadItems() {
-        String response = restTemplate.getForObject(Utils.getRIOT_API_ITEM_URL(), String.class);
+        String response = restTemplate.getForObject(Utils.getRiotApiItemURL(), String.class);
         try {
             JsonNode root = objectMapper.readTree(response);
             JsonNode dataNode = root.path("data");
@@ -64,13 +60,6 @@ public class ItemService {
         deleteDuplicatedItems();
     }
 
-    /**
-     * Elimina los ítems duplicados en el HashMap `items` basándose en el nombre del ítem.
-     * Esta función se ejecuta automáticamente después de que el contenedor de Spring haya inicializado el bean.
-     * <p>
-     * Utiliza un `Set` para rastrear los nombres de los ítems que ya se han visto y filtra los duplicados.
-     * Luego, limpia el HashMap original y lo vuelve a llenar con los ítems únicos.
-     */
     public void deleteDuplicatedItems() {
         Set<String> seenNames = new HashSet<>();
 
@@ -81,22 +70,22 @@ public class ItemService {
 
         items.clear();
         items.putAll(filteredItems);
-        uploadItemsToFirestore();
+        uploadItemsToDatabase();
     }
 
-    public void uploadItemsToFirestore() {
+    public void uploadItemsToDatabase() {
         Firestore db = FirestoreClient.getFirestore();
 
         items.values().forEach(item -> {
             db.collection("lolbuilder")
-                    .document(Utils.getRIOT_API_VERSION())
+                    .document(Utils.getRiotApiVersion())
                     .collection("items")
                     .document(item.getId())
                     .set(item);
         });
     }
 
-    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
+    public List<Item> loadItemsFromDatabase() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
 
         Iterable<DocumentReference> refs = db.collection("lolbuilder").listDocuments();
@@ -111,12 +100,12 @@ public class ItemService {
 
         versions.sort(Comparator.reverseOrder());
 
-        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRiotApiVersion())) {
             loadItems();
         }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document(Utils.getRIOT_API_VERSION())
+                .document(Utils.getRiotApiVersion())
                 .collection("items")
                 .get();
 

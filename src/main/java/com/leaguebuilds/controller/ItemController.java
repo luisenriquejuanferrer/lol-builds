@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -15,24 +16,24 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping(Utils.BASE_API_URL)
 public class ItemController {
 
-    private ItemService itemService;
+    private final ItemService itemService;
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
-//    @GetMapping("/items")
-//    public HashMap<Integer, Item> getItems() {
-//        return itemService.getItems();
-//    }
-
-    @GetMapping("/items")
-    public List<Item> getItemsFromFirestore() throws ExecutionException, InterruptedException {
-        return itemService.getItemsFromFirestore();
+    @GetMapping("/items/cachedItems")
+    public HashMap<Integer, Item> getCachedItems() {
+        return itemService.getItems();
     }
 
-    @PostMapping("/items/uploadItems")
-    public void uploadItemsToFirestore() {
-        itemService.uploadItemsToFirestore();
+    @GetMapping("/items/loadFromDatabase")
+    public List<Item> loadItemsFromDatabase() throws ExecutionException, InterruptedException {
+        return itemService.loadItemsFromDatabase();
+    }
+
+    @PostMapping("/items/uploadToDatabase")
+    public void uploadItemsToDatabase() {
+        itemService.uploadItemsToDatabase();
     }
 }

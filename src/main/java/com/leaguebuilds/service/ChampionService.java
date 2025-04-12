@@ -33,7 +33,7 @@ public class ChampionService {
 
     // @PostConstruct
     public void loadChampions() {
-        String response = restTemplate.getForObject(Utils.getRIOT_API_CHAMPION_URL(), String.class);
+        String response = restTemplate.getForObject(Utils.getRiotApiChampionURL(), String.class);
 
         try {
             JsonNode root = objectMapper.readTree(response);
@@ -55,22 +55,22 @@ public class ChampionService {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing item data: " + e.getMessage());
         }
-        uploadChampionsToFirestore();
+        uploadChampionsToDatabase();
     }
 
-    public void uploadChampionsToFirestore() {
+    public void uploadChampionsToDatabase() {
         Firestore db = FirestoreClient.getFirestore();
 
         champions.values().forEach(champion -> {
             db.collection("lolbuilder")
-                    .document(Utils.getRIOT_API_VERSION())
+                    .document(Utils.getRiotApiVersion())
                     .collection("champions")
                     .document(champion.getId())
                     .set(champion);
         });
     }
 
-    public List<Champion> getChampionsFromFirestore() throws ExecutionException, InterruptedException {
+    public List<Champion> loadChampionsFromDatabase() throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
 
         Iterable<DocumentReference> refs = db.collection("lolbuilder").listDocuments();
@@ -85,12 +85,12 @@ public class ChampionService {
 
         versions.sort(Comparator.reverseOrder());
 
-        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRIOT_API_VERSION())) {
+        if (versions.isEmpty() || !Objects.equals(versions.getFirst(), Utils.getRiotApiVersion())) {
             loadChampions();
         }
 
         ApiFuture<QuerySnapshot> future = db.collection("lolbuilder")
-                .document(Utils.getRIOT_API_VERSION())
+                .document(Utils.getRiotApiVersion())
                 .collection("champions")
                 .get();
 

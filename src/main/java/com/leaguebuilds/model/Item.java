@@ -15,8 +15,7 @@ public class Item {
     private int totalGold;
     private List<String> tags = new ArrayList<>();
 
-    //Esto habrá que cambiarlo para que coja la constant de RIOT_API_IMAGE_URL + id + ".png"
     public String getImage() {
-        return Utils.getRIOT_API_ITEM_IMAGE_URL() + id + ".png";
+        return Utils.getRiotApiItemImageURL() + id + ".png";
     }
 }
