@@ -12,7 +12,7 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseInitializer {
-    @Value("${FIREBASE.CONFIG.FILE.PATH.DEV}")
+    @Value("${FIREBASE.CONFIG.FILE.PATH.PROD}")
     private String FIREBASE_CONFIG_FILE_PATH;
 
     @PostConstruct
