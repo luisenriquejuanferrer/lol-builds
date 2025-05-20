@@ -7,9 +7,8 @@ RUN apt-get update && apt-get install -y maven
 # Definir el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el archivo pom.xml y los archivos fuente
-COPY pom.xml .
-COPY src ./src
+# Copiar TODOS los archivos necesarios (incluyendo pom.xml y src)
+COPY . .
 
 # Ejecutar Maven para empaquetar el archivo JAR
 RUN mvn clean package -DskipTests
